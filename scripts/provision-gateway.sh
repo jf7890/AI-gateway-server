@@ -5,10 +5,12 @@ set -e
 # Wait for network interface to come up fully
 sleep 10
 
-# Add community repository for pip and python if necessary
-cat >> /etc/apk/repositories <<EOF
-http://dl-cdn.alpinelinux.org/alpine/v3.20/community
-EOF
+# Ensure community repository matches current Alpine version
+ALPINE_BRANCH="$(. /etc/os-release && echo "$VERSION_ID" | awk -F. '{print $1"."$2}')"
+COMMUNITY_URL="https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_BRANCH}/community"
+if ! grep -qF "$COMMUNITY_URL" /etc/apk/repositories; then
+  echo "$COMMUNITY_URL" >> /etc/apk/repositories
+fi
 
 apk update
 apk upgrade
@@ -17,8 +19,11 @@ apk upgrade
 apk add --no-cache python3 py3-pip sqlite doas curl bash sqlite-dev gcc g++ python3-dev linux-headers musl-dev libffi-dev
 
 # Create gateway group and user
-addgroup -S gateway
-adduser -S -D -h /opt/gateway-app -G gateway gateway
+addgroup -S gateway >/dev/null 2>&1 || true
+if ! id -u gateway >/dev/null 2>&1; then
+  # Do not create home here (file provisioner already populated /opt/gateway-app)
+  adduser -S -D -H -h /opt/gateway-app -G gateway gateway >/dev/null 2>&1 || true
+fi
 
 mkdir -p /opt/gateway-app
 chown -R gateway:gateway /opt/gateway-app
