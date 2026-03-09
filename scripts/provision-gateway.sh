@@ -21,18 +21,34 @@ apk add --no-cache python3 py3-pip sqlite doas curl bash sqlite-dev gcc g++ pyth
 # Create gateway group and user
 addgroup -S gateway >/dev/null 2>&1 || true
 if ! id -u gateway >/dev/null 2>&1; then
-  # Do not create home here (file provisioner already populated /opt/gateway-app)
-  adduser -S -D -H -h /opt/gateway-app -G gateway gateway >/dev/null 2>&1 || true
+  # Avoid home creation errors; we do not rely on home for venv paths
+  adduser -S -D -G gateway gateway >/dev/null 2>&1 || true
 fi
 
+# Ensure app directory exists and is a directory
+if [ -e /opt/gateway-app ] && [ ! -d /opt/gateway-app ]; then
+  rm -f /opt/gateway-app
+fi
 mkdir -p /opt/gateway-app
 chown -R gateway:gateway /opt/gateway-app
 
 echo "Installing Python dependencies..."
 # We will use venv
-su - gateway -c "python3 -m venv /opt/gateway-app/venv"
-su - gateway -c "/opt/gateway-app/venv/bin/pip install --upgrade pip"
-su - gateway -c "/opt/gateway-app/venv/bin/pip install -r /opt/gateway-app/requirements.txt"
+RUN_USER="gateway"
+if ! id -u gateway >/dev/null 2>&1; then
+  echo "WARN: gateway user missing; using root for venv install" >&2
+  RUN_USER="root"
+fi
+if [ "$RUN_USER" = "root" ]; then
+  python3 -m venv /opt/gateway-app/venv
+  /opt/gateway-app/venv/bin/pip install --upgrade pip
+  /opt/gateway-app/venv/bin/pip install -r /opt/gateway-app/requirements.txt
+  chown -R gateway:gateway /opt/gateway-app/venv || true
+else
+  su -s /bin/sh "$RUN_USER" -c "python3 -m venv /opt/gateway-app/venv"
+  su -s /bin/sh "$RUN_USER" -c "/opt/gateway-app/venv/bin/pip install --upgrade pip"
+  su -s /bin/sh "$RUN_USER" -c "/opt/gateway-app/venv/bin/pip install -r /opt/gateway-app/requirements.txt"
+fi
 
 # Install openrc init script for gateway
 cp /opt/gateway-app/gateway.initd /etc/init.d/gateway
