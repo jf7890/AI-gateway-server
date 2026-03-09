@@ -34,6 +34,12 @@ variable "internet_bridge" {
   type        = string
 }
 
+variable "lan_vlan_tag" {
+  description = "VLAN tag for VM network adapter"
+  type        = number
+  default     = 99
+}
+
 # --- Storage Config ---
 variable "iso_storage" {
   description = "Storage pool for ISO images and templates"

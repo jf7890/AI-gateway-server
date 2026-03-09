@@ -3,7 +3,8 @@ proxmox_username      = "root@pam!packer"
 proxmox_node          = "homelab"
 
 # Network
-internet_bridge       = "vmbr10"
+internet_bridge       = "nonet"
+lan_vlan_tag          =  99
 
 # Storage
 iso_storage           = "hdd-data"

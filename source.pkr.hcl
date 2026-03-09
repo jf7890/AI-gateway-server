@@ -34,6 +34,7 @@ source "proxmox-iso" "alpine" {
     model    = "virtio"
     bridge   = var.internet_bridge
     firewall = false
+    vlan_tag = var.lan_vlan_tag
   }
 
   disks {
