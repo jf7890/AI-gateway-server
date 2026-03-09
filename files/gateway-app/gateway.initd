@@ -1,0 +1,18 @@
+#!/sbin/openrc-run
+
+name="AI Gateway Server"
+description="LiteLLM + FastAPI based AI proxy for Red Lab"
+command="/opt/gateway-app/venv/bin/uvicorn"
+command_args="main:app --host 0.0.0.0 --port 8000"
+command_background=true
+pidfile="/run/gateway.pid"
+directory="/opt/gateway-app"
+
+depend() {
+    need net
+    after firewall
+}
+
+start_pre() {
+    checkpath -d -m 0755 -o gateway:gateway /opt/gateway-app/data
+}
