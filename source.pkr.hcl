@@ -55,8 +55,8 @@ source "proxmox-iso" "alpine" {
   boot_command = [
     "<enter><wait>",
     "root<enter><wait>",
-    "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
-    "wget -O /tmp/answers http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
+    "ifconfig eth0 up && udhcpc -i eth0<enter><wait10>",
+    "sh -c 'for i in 1 2 3 4 5; do wget -O /tmp/answers http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers && break || sleep 2; done'<enter><wait>",
 
     "ERASE_DISKS=/dev/sda setup-alpine -e -f /tmp/answers && mount /dev/sda3 /mnt && apk add --root /mnt qemu-guest-agent && chroot /mnt rc-update add qemu-guest-agent default && reboot<enter>"
   ]
