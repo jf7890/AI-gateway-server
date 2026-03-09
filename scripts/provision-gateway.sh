@@ -32,6 +32,12 @@ fi
 mkdir -p /opt/gateway-app
 chown -R gateway:gateway /opt/gateway-app
 
+# If Packer uploaded into a nested folder, normalize it
+if [ ! -f /opt/gateway-app/requirements.txt ] && [ -f /opt/gateway-app/gateway-app/requirements.txt ]; then
+  cp -a /opt/gateway-app/gateway-app/. /opt/gateway-app/
+  rm -rf /opt/gateway-app/gateway-app
+fi
+
 echo "Installing Python dependencies..."
 # We will use venv
 RUN_USER="gateway"
@@ -42,12 +48,20 @@ fi
 if [ "$RUN_USER" = "root" ]; then
   python3 -m venv /opt/gateway-app/venv
   /opt/gateway-app/venv/bin/pip install --upgrade pip
-  /opt/gateway-app/venv/bin/pip install -r /opt/gateway-app/requirements.txt
+  if [ -f /opt/gateway-app/requirements.txt ]; then
+    /opt/gateway-app/venv/bin/pip install -r /opt/gateway-app/requirements.txt
+  else
+    echo "WARN: /opt/gateway-app/requirements.txt missing; skipping pip install" >&2
+  fi
   chown -R gateway:gateway /opt/gateway-app/venv || true
 else
   su -s /bin/sh "$RUN_USER" -c "python3 -m venv /opt/gateway-app/venv"
   su -s /bin/sh "$RUN_USER" -c "/opt/gateway-app/venv/bin/pip install --upgrade pip"
-  su -s /bin/sh "$RUN_USER" -c "/opt/gateway-app/venv/bin/pip install -r /opt/gateway-app/requirements.txt"
+  if [ -f /opt/gateway-app/requirements.txt ]; then
+    su -s /bin/sh "$RUN_USER" -c "/opt/gateway-app/venv/bin/pip install -r /opt/gateway-app/requirements.txt"
+  else
+    echo "WARN: /opt/gateway-app/requirements.txt missing; skipping pip install" >&2
+  fi
 fi
 
 # Install openrc init script for gateway

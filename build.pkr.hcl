@@ -3,7 +3,7 @@ build {
 
   provisioner "file" {
     source      = "files/gateway-app/"
-    destination = "/opt/gateway-app"
+    destination = "/opt/gateway-app/"
   }
 
   provisioner "shell" {
