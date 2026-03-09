@@ -2,8 +2,8 @@ build {
   sources = ["source.proxmox-iso.alpine"]
 
   provisioner "file" {
-    source      = "files/gateway-app/"
-    destination = "/opt/gateway-app/"
+    source      = "files/gateway-app"
+    destination = "/tmp"
   }
 
   provisioner "shell" {

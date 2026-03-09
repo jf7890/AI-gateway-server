@@ -25,6 +25,12 @@ if ! id -u gateway >/dev/null 2>&1; then
   adduser -S -D -G gateway gateway >/dev/null 2>&1 || true
 fi
 
+# Move uploaded app payload into place
+if [ -d /tmp/gateway-app ]; then
+  rm -rf /opt/gateway-app
+  mv /tmp/gateway-app /opt/gateway-app
+fi
+
 # Ensure app directory exists and is a directory
 if [ -e /opt/gateway-app ] && [ ! -d /opt/gateway-app ]; then
   rm -f /opt/gateway-app
