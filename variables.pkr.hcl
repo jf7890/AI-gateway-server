@@ -5,12 +5,12 @@ variable "proxmox_url" {
 
 variable "proxmox_username" {
   type = string
-  default = "root@pam"
 }
 
 variable "proxmox_token" {
   type      = string
   sensitive = true
+  default = env("PROXMOX_TOKEN")
 }
 
 variable "proxmox_node" {
@@ -20,33 +20,27 @@ variable "proxmox_node" {
 
 # --- SSH Key Config ---
 variable "ssh_public_key" {
-  description = "Nội dung Public Key (để đưa vào máy ảo)"
-  type        = string
-  # Ví dụ: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI..."
+  type    = string
+  default = env("PACKER_SSH_PUBLIC_KEY")
 }
 
 variable "ssh_private_key_file" {
-  description = "Đường dẫn tới file Private Key (để Packer dùng SSH vào)"
-  type        = string
-  default     = "~/.ssh/id_ed25519"
+  type    = string
+  default = env("PACKER_SSH_PRIVATE_KEY")
 }
 
 # --- Network Config ---
 variable "internet_bridge" {
-  description = "WAN bridge for internet connectivity"
   type        = string
-  default     = "vmbr0"
 }
 
 # --- Storage Config ---
 variable "iso_storage" {
   description = "Storage pool for ISO images and templates"
   type        = string
-  default     = "local"
 }
 
 variable "vm_storage_pool" {
   description = "Storage pool for VM disks"
   type        = string
-  default     = "local-lvm"
 }
